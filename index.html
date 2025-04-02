@@ -1,1 +1,377 @@
-hello
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>FakeGPT</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+    }
+
+    .container {
+      width: 100vw;
+      height: calc(100vw * (16/9));
+      max-height: 100vh;
+      max-width: calc(100vh * (9/16));
+      background-color: #343541;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      aspect-ratio: 9/16;
+    }
+
+    .header {
+      background-color: #202123;
+      padding: 12px;
+      color: white;
+      text-align: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background-color: #343541;
+    }
+
+    .message {
+      display: flex;
+      gap: 8px;
+      color: white;
+      width: 100%;
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message.bot {
+      justify-content: flex-start;
+    }
+
+    .message-content {
+      max-width: 85%;
+      padding: 10px 15px;
+      border-radius: 15px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .user .message-content {
+      background-color: #444654;
+    }
+
+    .bot .message-content {
+      background-color: #343541;
+      border: 1px solid #565869;
+    }
+
+    .input-container {
+      background-color: #40414f;
+      padding: 12px;
+      flex-shrink: 0;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px;
+      background-color: #40414f;
+    }
+
+    .action-button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 20px;
+      background-color: #565869;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.2s;
+    }
+
+    .action-button.active {
+      background-color: #707184;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 40px 12px 15px;
+      border-radius: 25px;
+      border: 1px solid #565869;
+      background-color: #40414f;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #707184;
+    }
+
+    .send-button {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #707184;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .send-button:hover {
+      color: #fff;
+    }
+
+    .typing-indicator {
+      display: none;
+      padding: 10px 15px;
+      background-color: #343541;
+      border: 1px solid #565869;
+      border-radius: 15px;
+      color: #fff;
+      max-width: 85%;
+      margin-left: 5px;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #fff;
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+
+    @keyframes typing {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    .wave span {
+      display: inline-block;
+      animation: wave 1s infinite;
+    }
+
+    @keyframes wave {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>FakeGPT</h1>
+    </div>
+
+    <div class="chat-container" id="chatContainer">
+      <div class="typing-indicator" id="typingIndicator">
+        <div class="typing-dots">
+          <div class="typing-dot" style="animation-delay: 0s"></div>
+          <div class="typing-dot" style="animation-delay: 0.2s"></div>
+          <div class="typing-dot" style="animation-delay: 0.4s"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-container">
+      <div class="input-wrapper">
+        <input type="text" id="userInput" placeholder="Type your message..." />
+        <button class="send-button" id="sendButton">➤</button>
+      </div>
+      <div class="action-buttons">
+        <button class="action-button" id="attachButton">
+          ＋
+        </button>
+        <button class="action-button" id="searchButton">
+          🌐 Search
+        </button>
+        <button class="action-button" id="reasonButton">
+          💡 Reason
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById("chatContainer");
+    const userInput = document.getElementById("userInput");
+    const sendButton = document.getElementById("sendButton");
+    const typingIndicator = document.getElementById("typingIndicator");
+    const searchButton = document.getElementById("searchButton");
+    const reasonButton = document.getElementById("reasonButton");
+
+    let isBotResponding = false;
+    let searchSelected = false;
+    let reasonSelected = false;
+
+    searchButton.addEventListener("click", () => {
+      searchSelected = !searchSelected;
+      searchButton.classList.toggle("active", searchSelected);
+    });
+
+    reasonButton.addEventListener("click", () => {
+      reasonSelected = !reasonSelected;
+      reasonButton.classList.toggle("active", reasonSelected);
+    });
+
+    function createWaveElement(text) {
+      const wrapper = document.createElement("span");
+      wrapper.classList.add("wave");
+      text.split("").forEach((char, index) => {
+        const span = document.createElement("span");
+        span.textContent = char;
+        span.style.animationDelay = `${index * 0.05}s`;
+        wrapper.appendChild(span);
+      });
+      return wrapper;
+    }
+
+    function addMessage(message, isUser) {
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${isUser ? "user" : "bot"}`;
+
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "message-content";
+      if (typeof message === "string") {
+        contentDiv.textContent = message;
+      } else {
+        contentDiv.appendChild(message);
+      }
+      messageDiv.appendChild(contentDiv);
+      chatContainer.insertBefore(messageDiv, typingIndicator);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      return contentDiv;
+    }
+
+    function showTypingIndicator() {
+      typingIndicator.style.display = "block";
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      typingIndicator.style.display = "none";
+    }
+
+    function simulateStreamingResponse(responseText) {
+      return new Promise(resolve => {
+        const responseDiv = addMessage("", false);
+        let index = 0;
+        const typeCharacter = () => {
+          if (index < responseText.length) {
+            responseDiv.textContent += responseText.charAt(index);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            index++;
+            setTimeout(typeCharacter, 20);
+          } else {
+            hideTypingIndicator();
+            isBotResponding = false;
+            resolve();
+          }
+        };
+        typeCharacter();
+      });
+    }
+
+    function simulateExtraProcess(text, duration = 2000) {
+      return new Promise(resolve => {
+        const waveElement = createWaveElement(text);
+        const extraMsgDiv = addMessage(waveElement, false);
+        setTimeout(() => {
+          extraMsgDiv.parentElement.remove();
+          resolve();
+        }, duration);
+      });
+    }
+
+    async function handleUserInput() {
+      if (isBotResponding) return;
+      
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      addMessage(message, true);
+      userInput.value = "";
+      userInput.disabled = true;
+
+      const processes = [];
+      if (searchSelected) {
+        processes.push(simulateExtraProcess("Searching web...", 2000));
+      }
+      if (reasonSelected) {
+        processes.push(simulateExtraProcess("Analyzing...", 2500));
+      }
+
+      await Promise.all(processes);
+
+      searchSelected = false;
+      reasonSelected = false;
+      searchButton.classList.remove("active");
+      reasonButton.classList.remove("active");
+
+      showTypingIndicator();
+      isBotResponding = true;
+
+      const sampleResponses = [
+        "Here's what I found:",
+        "Based on my analysis:",
+        "The research indicates:",
+        "After careful consideration:"
+      ];
+      const responseText = sampleResponses[Math.floor(Math.random() * sampleResponses.length)] + 
+        "\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+
+      await simulateStreamingResponse(responseText);
+
+      userInput.disabled = false;
+      userInput.focus();
+    }
+
+    sendButton.addEventListener("click", handleUserInput);
+    userInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter" && !isBotResponding) {
+        handleUserInput();
+      }
+    });
+  </script>
+</body>
+</html>
