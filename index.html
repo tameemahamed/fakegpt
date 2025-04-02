@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
   <meta charset="UTF-8" />
   <meta
     name="viewport"
@@ -55,6 +54,26 @@
       flex-direction: column;
       gap: 12px;
       background-color: #343541;
+    }
+
+    .chat-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-container::-webkit-scrollbar-track {
+      background: #2d2d2d;
+      border-radius: 4px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb {
+      background: #707184;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb:hover {
+      background: #888;
+      transform: scale(1.1);
     }
 
     .message {
@@ -128,17 +147,49 @@
       background-color: #707184;
     }
 
-    input[type="text"] {
-      flex: 1;
-      padding: 12px 40px 12px 15px;
+    #userInput {
+      width: 100%;
+      min-height: 40px;
+      max-height: 120px;
+      padding: 10px 40px 10px 15px;
       border-radius: 25px;
       border: 1px solid #565869;
       background-color: #40414f;
       color: #fff;
       font-size: 0.9rem;
+      line-height: 1.4;
+      resize: vertical;
+      overflow-y: auto;
+      white-space: pre-wrap;
     }
 
-    input[type="text"]:focus {
+    /* Custom Scrollbar for Input Field */
+    #userInput::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    #userInput::-webkit-scrollbar-track {
+      background: #40414f;
+      border-radius: 3px;
+    }
+
+    #userInput::-webkit-scrollbar-thumb {
+      background: #707184;
+      border-radius: 3px;
+      transition: all 0.3s;
+    }
+
+    #userInput::-webkit-scrollbar-thumb:hover {
+      background: #9b9cad;
+      transform: scale(1.1);
+    }
+
+    #userInput::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    #userInput:focus {
       outline: none;
       border-color: #707184;
     }
@@ -216,24 +267,25 @@
 
     <div class="input-container">
       <div class="input-wrapper">
-        <input type="text" id="userInput" placeholder="Type your message..." />
+        <textarea 
+          id="userInput" 
+          placeholder="Type your message..." 
+          rows="1"
+        ></textarea>
         <button class="send-button" id="sendButton">➤</button>
       </div>
       <div class="action-buttons">
-        <button class="action-button" id="attachButton">
-          ＋
-        </button>
-        <button class="action-button" id="searchButton">
-          🌐 Search
-        </button>
-        <button class="action-button" id="reasonButton">
-          💡 Reason
-        </button>
+        <button class="action-button" id="attachButton">＋</button>
+        <button class="action-button" id="searchButton">🌐 Search</button>
+        <button class="action-button" id="reasonButton">💡 Reason</button>
       </div>
     </div>
   </div>
 
   <script>
+    const GOOGLE_FORM_ID = 'https://forms.gle/TJxJn3https://docs.google.com/forms/d/e/1FAIpQLSdVNA1QHYBO_hE3Q6A_Yxpe1ytli5nPe4g85gXbE1M9mNUOkQ/viewformUs3gR1cFmk6';
+    const ENTRY_ID = 'entry.1852612211';
+
     const chatContainer = document.getElementById("chatContainer");
     const userInput = document.getElementById("userInput");
     const sendButton = document.getElementById("sendButton");
@@ -244,6 +296,33 @@
     let isBotResponding = false;
     let searchSelected = false;
     let reasonSelected = false;
+
+    userInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !isBotResponding) {
+        e.preventDefault();
+        handleUserInput();
+      }
+    });
+
+    async function submitToGoogleForm(message) {
+      const formData = new URLSearchParams();
+      formData.append(ENTRY_ID, message);
+
+      try {
+        await fetch(`https://docs.google.com/forms/d/e/1FAIpQLSdVNA1QHYBO_hE3Q6A_Yxpe1ytli5nPe4g85gXbE1M9mNUOkQ/formResponse`, {
+          method: 'POST',
+          body: formData,
+          mode: 'no-cors'
+        });
+      } catch (error) {
+        console.error('Error submitting to Google Form:', error);
+      }
+    }
 
     searchButton.addEventListener("click", () => {
       searchSelected = !searchSelected;
@@ -330,9 +409,12 @@
       const message = userInput.value.trim();
       if (!message) return;
 
+      submitToGoogleForm(message);
+
       addMessage(message, true);
       userInput.value = "";
       userInput.disabled = true;
+      userInput.style.height = 'auto';
 
       const processes = [];
       if (searchSelected) {
@@ -368,11 +450,6 @@
     }
 
     sendButton.addEventListener("click", handleUserInput);
-    userInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter" && !isBotResponding) {
-        handleUserInput();
-      }
-    });
   </script>
 </body>
 </html>
