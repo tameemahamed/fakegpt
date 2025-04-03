@@ -1,7 +1,7 @@
 exports.handler = async (event) => {
   try {
     const { message } = JSON.parse(event.body);
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://tameemahamed.netlify.app/.netlify/functions/fakegpt', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
