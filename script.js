@@ -1,6 +1,6 @@
 const chatContainer = document.getElementById("chatContainer");
-const shadybot = "act like you are some genz and some shady chatbot and answer the following question(do not ever say that you are acting shady): ";
-const userInput = shadybot + "\"" + document.getElementById("userInput") + "\"";
+const shadybotPrompt = "act like you are some genz and some shady chatbot and answer the following question(do not ever say that you are acting shady): ";
+const userInput = document.getElementById("userInput");
 const sendButton = document.getElementById("sendButton");
 const typingIndicator = document.getElementById("typingIndicator");
 const searchButton = document.getElementById("searchButton");
@@ -97,26 +97,27 @@ async function simulateExtraProcess(text, duration = 2000) {
 
 async function getDeepSeekResponse(message) {
   try {
-    const response = await fetch('/.netlify/functions/deepseek', {
+    const fullPrompt = `${shadybotPrompt}"${message}"`;
+    const response = await fetch('/.netlify/functions/fakegpt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message: fullPrompt })
     });
     if (!response.ok) throw new Error('API request failed');
     const data = await response.json();
     return data.choices[0].message.content;
   } catch (error) {
     console.error("Error:", error);
-    return "I'm having trouble responding right now. Please try again later.";
+    return "Yo, can't vibe with that rn. Try again later maybe? 🙃";
   }
 }
 
 async function handleUserInput() {
   if (isBotResponding) return;
-  const message = userInput.value.trim();
-  if (!message) return;
+  const rawMessage = userInput.value.trim();
+  if (!rawMessage) return;
 
-  addMessage(message, true);
+  addMessage(rawMessage, true);
   userInput.value = "";
   userInput.disabled = true;
   userInput.style.height = 'auto';
@@ -134,7 +135,7 @@ async function handleUserInput() {
   showTypingIndicator();
   isBotResponding = true;
 
-  const apiResponse = await getDeepSeekResponse(message);
+  const apiResponse = await getDeepSeekResponse(rawMessage);
   await simulateStreamingResponse(apiResponse);
   userInput.disabled = false;
   userInput.focus();
