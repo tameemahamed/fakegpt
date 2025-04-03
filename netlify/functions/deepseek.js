@@ -1,7 +1,7 @@
 exports.handler = async (event) => {
   try {
     const { message } = JSON.parse(event.body);
-    const response = await fetch('https://tameemahamed.netlify.app/.netlify/functions/deepseek', {
+    const response = await fetch('https://tameemahamed.netlify.app/.netlify/functions/fakegpt', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,3 +29,9 @@ exports.handler = async (event) => {
     };
   }
 };
+/*
+curl -X POST https://tameemahamed.netlify.app/.netlify/functions/fakegpt \
+-H "Content-Type: application/json" \
+-d '{"message": "test"}'
+
+*/
