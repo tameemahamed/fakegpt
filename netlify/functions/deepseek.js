@@ -1,7 +1,7 @@
 exports.handler = async (event) => {
   try {
     const { message } = JSON.parse(event.body);
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch('https://tameemahamed.netlify.app/.netlify/functions/deepseek', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
