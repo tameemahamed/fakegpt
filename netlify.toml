@@ -5,4 +5,4 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Access-Control-Allow-Origin = "https://yourusername.github.io"
+    Access-Control-Allow-Origin = "https://tameemahamed.github.io"
