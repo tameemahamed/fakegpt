@@ -95,22 +95,61 @@ async function simulateExtraProcess(text, duration = 2000) {
   });
 }
 
+
+function markdownToText(markdown) {
+  return markdown
+    // Headers
+    .replace(/#{1,6}\s*/g, '')
+    // Bold and italic
+    .replace(/(\*\*|__)(.*?)\1/g, '$2')
+    .replace(/(\*|_)(.*?)\1/g, '$2')
+    // Links
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    // Images
+    .replace(/!\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    // Lists
+    .replace(/^[\*\-+]\s+/gm, '')
+    // Code blocks
+    .replace(/```[\s\S]*?```/g, '')
+    // Inline code
+    .replace(/`([^`]+)`/g, '$1')
+    // Blockquotes
+    .replace(/^>\s+/gm, '')
+    // Horizontal rules
+    .replace(/^\s*([-*_] *){3,}\s*$/gm, '')
+    // Remove extra newlines
+    .replace(/\n{2,}/g, '\n\n')
+    // Trim whitespace
+    .trim();
+}
+
 async function getDeepSeekResponse(message) {
   try {
     const fullPrompt = `${shadybotPrompt}"${message}"`;
-    const response = await fetch('/.netlify/functions/fakegpt', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: fullPrompt })
+      headers: {
+        Authorization: 'Bearer <nije uggo banai falao>',
+        'HTTP-Referer': 'https://www.sitename.com',
+      },
+      body: JSON.stringify({
+        model: 'deepseek/deepseek-r1:free',
+        messages: [{ role: 'user', content: fullPrompt }],
+      })
     });
-    if (!response.ok) throw new Error('API request failed');
+    // if (!response.ok) throw new Error('API request failed');
     const data = await response.json();
+    console.log(data.choices[0].message.content);
+    // const markdownText = marked.parse(data.choices[0].message.content);
+    // const { htmlToText } = require('html-to-text');
+    // const plainText = markdownToText(marked.parse(markdownText));
     return data.choices[0].message.content;
   } catch (error) {
     console.error("Error:", error);
     return "Yo, can't vibe with that rn. Try again later maybe? 🙃";
   }
 }
+
 
 async function handleUserInput() {
   if (isBotResponding) return;
@@ -137,6 +176,7 @@ async function handleUserInput() {
 
   const apiResponse = await getDeepSeekResponse(rawMessage);
   await simulateStreamingResponse(apiResponse);
+  // finalize(rawMessage);
   userInput.disabled = false;
   userInput.focus();
 }
