@@ -5,6 +5,7 @@ const sendButton = document.getElementById("sendButton");
 const typingIndicator = document.getElementById("typingIndicator");
 const searchButton = document.getElementById("searchButton");
 const reasonButton = document.getElementById("reasonButton");
+const api_key = process.env.DEEPSEEK_API_KEY;
 let isBotResponding = false;
 let searchSelected = false;
 let reasonSelected = false;
@@ -95,41 +96,13 @@ async function simulateExtraProcess(text, duration = 2000) {
   });
 }
 
-
-function markdownToText(markdown) {
-  return markdown
-    // Headers
-    .replace(/#{1,6}\s*/g, '')
-    // Bold and italic
-    .replace(/(\*\*|__)(.*?)\1/g, '$2')
-    .replace(/(\*|_)(.*?)\1/g, '$2')
-    // Links
-    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-    // Images
-    .replace(/!\[([^\]]+)\]\([^\)]+\)/g, '$1')
-    // Lists
-    .replace(/^[\*\-+]\s+/gm, '')
-    // Code blocks
-    .replace(/```[\s\S]*?```/g, '')
-    // Inline code
-    .replace(/`([^`]+)`/g, '$1')
-    // Blockquotes
-    .replace(/^>\s+/gm, '')
-    // Horizontal rules
-    .replace(/^\s*([-*_] *){3,}\s*$/gm, '')
-    // Remove extra newlines
-    .replace(/\n{2,}/g, '\n\n')
-    // Trim whitespace
-    .trim();
-}
-
 async function getDeepSeekResponse(message) {
   try {
     const fullPrompt = `${shadybotPrompt}"${message}"`;
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer <nije uggo banai falao>',
+        Authorization: `Bearer $api_key`,
         'HTTP-Referer': 'https://www.sitename.com',
       },
       body: JSON.stringify({
