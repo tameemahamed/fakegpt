@@ -30,4 +30,4 @@ jobs:
 
       # Run your script (e.g., Node.js script)
       - name: Execute script
-        run: node your_script.js  # Replace with your script name
+        run: node script.js  # Replace with your script name
