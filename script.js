@@ -5,7 +5,7 @@ const sendButton = document.getElementById("sendButton");
 const typingIndicator = document.getElementById("typingIndicator");
 const searchButton = document.getElementById("searchButton");
 const reasonButton = document.getElementById("reasonButton");
-const api_key = process.env.DEEPSEEK_API_KEY;
+// const api_key = process.env.DEEPSEEK_API_KEY;
 let isBotResponding = false;
 let searchSelected = false;
 let reasonSelected = false;
@@ -102,7 +102,7 @@ async function getDeepSeekResponse(message) {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer $api_key`,
+         Authorization: `Bearer <api key>`,
         'HTTP-Referer': 'https://www.sitename.com',
       },
       body: JSON.stringify({
